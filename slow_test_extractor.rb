@@ -1,5 +1,6 @@
 require "pathname"
 require "date"
+require "csv"
 require "./slow_test.rb"
 require "./slow_test_collection.rb"
 
@@ -13,14 +14,25 @@ class SlowTestExtractor
     @collection = SlowTestCollection.new
   end
 
-  def execute(directory = "results")
+  # mode: :csv or :md
+  def execute(directory = "results", mode: :csv)
     pos = 0
     @log.scan(EXAMPLE_PATTERN).size.times { |_| pos = extract_tests(pos) }
 
-    path_name = Pathname.pwd + directory + "#{Date.today.strftime('%Y%m%d')}.md"
-    File.open(path_name, "w") do |file|
-      file.puts collection.aggregate.join("\n")
+    path_name = Pathname.pwd + directory + "#{Date.today.strftime('%Y%m%d')}.#{mode}"
+    if mode == :csv
+      CSV.open(path_name, "w") do |csv|
+        csv << %w[seconds example file]
+        @collection.aggregate.each { |test| csv << test.to_a }
+      end
+    else
+      File.open(path_name, "w") do |file|
+        file.puts Date.today.strftime("%Y%m%d")
+        file.puts @collection.aggregate.map.with_index(1) { |test, i| "#{i}. #{test}" }
+      end
     end
+
+    path_name
   end
 
   private
@@ -47,4 +59,6 @@ class SlowTestExtractor
   end
 end
 
-SlowTestExtractor.new.execute
+path = SlowTestExtractor.new.execute(mode: :csv)
+
+p "Extract finished. See #{path}"
