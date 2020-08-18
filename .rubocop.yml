@@ -1,0 +1,10 @@
+AllCops:
+  TargetRubyVersion: 2.7
+Style/Documentation:
+  Enabled: false
+Style/DocumentationMethod:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: "double_quotes"
